@@ -18,14 +18,17 @@ const PORTFOLIO_CONFIG = {
 
 // Replace placeholder strings with your Firebase project's web-app configuration.
 // Firebase web config is not a server secret; Firestore Security Rules are the security boundary.
+
 const FIREBASE_CONFIG = {
-  apiKey: "PASTE_YOUR_FIREBASE_API_KEY",
-  authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "PASTE_YOUR_PROJECT_ID",
-  storageBucket: "PASTE_YOUR_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
-  appId: "PASTE_YOUR_APP_ID"
+  apiKey: "AIzaSyAYOa4g5MS73-0xIvo7icqAVymnknmrNjA",
+  authDomain: "my-portfolio-52d49.firebaseapp.com",
+  projectId: "my-portfolio-52d49",
+  storageBucket: "my-portfolio-52d49.firebasestorage.app",
+  messagingSenderId: "920419113191",
+  appId: "1:920419113191:web:935c0bef30eb3b7ec3aa42",
+  measurementId: "G-DXPSW250R1"
 };
+
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
