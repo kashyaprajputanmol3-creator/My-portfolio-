@@ -240,66 +240,140 @@ socialAnchors.forEach((anchor, index) => {
   if (url) anchor.href = url;
 });
 
-// Firebase contact form. Dynamic import keeps the page usable before Firebase is configured.
-const contactForm = $("#contactForm");
-const formStatus = $("#formStatus");
-const submitButton = $("#submitButton");
-const firebaseConfigured = FIREBASE_CONFIG.apiKey !== "PASTE_YOUR_FIREBASE_API_KEY"
-  && FIREBASE_CONFIG.projectId !== "PASTE_YOUR_PROJECT_ID"
-  && FIREBASE_CONFIG.appId !== "PASTE_YOUR_APP_ID";
+// Firebase + EmailJS Contact Form
+const contactForm = document.querySelector("#contactForm");
+const formStatus = document.querySelector("#formStatus");
+const submitButton = document.querySelector("#submitButton");
+
+const firebaseConfigured =
+  FIREBASE_CONFIG.apiKey !== "PASTE_YOUR_FIREBASE_API_KEY" &&
+  FIREBASE_CONFIG.projectId !== "PASTE_YOUR_PROJECT_ID" &&
+  FIREBASE_CONFIG.appId !== "PASTE_YOUR_APP_ID";
 
 function showFormStatus(message, type = "") {
   formStatus.textContent = message;
   formStatus.className = `form-status ${type}`.trim();
 }
+
 function validateForm(name, email, message) {
-  if (name.length < 2) return "Please enter a name with at least 2 characters.";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address.";
-  if (message.length < 10) return "Please write a message with at least 10 characters.";
+  if (name.length < 2) {
+    return "Please enter a name with at least 2 characters.";
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return "Please enter a valid email address.";
+  }
+
+  if (message.length < 10) {
+    return "Please write a message with at least 10 characters.";
+  }
+
   return "";
 }
-contactForm.addEventListener("submit", async event => {
+
+contactForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const name = $("#name").value.trim();
-  const email = $("#email").value.trim();
-  const message = $("#message").value.trim();
+
+  const name = document.querySelector("#name").value.trim();
+  const email = document.querySelector("#email").value.trim();
+  const message = document.querySelector("#message").value.trim();
+
   const validationError = validateForm(name, email, message);
+
   if (validationError) {
     showFormStatus(validationError, "error");
-    (name.length < 2 ? $("#name") : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? $("#email") : $("#message")).focus();
     return;
   }
+
   if (!firebaseConfigured) {
-    showFormStatus("Firebase is not configured yet. Add your Firebase web config in script.js and deploy the Firestore rules before submitting.", "error");
+    showFormStatus("Firebase configuration is missing.", "error");
     return;
   }
 
   submitButton.disabled = true;
-  submitButton.textContent = "Sending…";
-  showFormStatus("Submitting your message…");
+  submitButton.textContent = "Sending...";
+  showFormStatus("Submitting your message...");
+
+  let firebaseSaved = false;
+  let emailSent = false;
+
   try {
-    const { initializeApp, getApps, getApp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js");
-    const { getFirestore, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
-    const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+    const { initializeApp, getApps, getApp } =
+      await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js");
+
+    const {
+      getFirestore,
+      collection,
+      addDoc,
+      serverTimestamp
+    } = await import(
+      "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"
+    );
+
+    const app = getApps().length
+      ? getApp()
+      : initializeApp(FIREBASE_CONFIG);
+
     const db = getFirestore(app);
+
     await addDoc(collection(db, "portfolioMessages"), {
-      name, email, message,
+      name,
+      email,
+      message,
       createdAt: serverTimestamp(),
       source: "portfolio"
     });
-    contactForm.reset();
-    showFormStatus("Message submitted successfully. Thank you for reaching out.", "success");
+
+    firebaseSaved = true;
   } catch (error) {
-    console.error("Contact form submission failed:", error);
-    if (error && error.code === "permission-denied") {
-      showFormStatus("Firebase denied this request. Check that Firestore is enabled and the provided security rules are deployed.", "error");
-    } else {
-      showFormStatus("The message could not be sent. Check your connection and Firebase setup, then try again.", "error");
-    }
-  } finally {
-    submitButton.disabled = false;
-    submitButton.innerHTML = 'Send message <span aria-hidden="true">↗</span>';
+    console.error("Firebase save failed:", error);
   }
+
+  try {
+    const emailjs = await import(
+      "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm"
+    );
+
+    await emailjs.send(
+      EMAILJS_CONFIG.serviceId,
+      EMAILJS_CONFIG.templateId,
+      { name, email, message },
+      { publicKey: EMAILJS_CONFIG.publicKey }
+    );
+
+    emailSent = true;
+  } catch (error) {
+    console.error("EmailJS sending failed:", error);
+  }
+
+  if (firebaseSaved && emailSent) {
+    contactForm.reset();
+    showFormStatus(
+      "Message saved successfully and email notification sent!",
+      "success"
+    );
+  } else if (firebaseSaved) {
+    contactForm.reset();
+    showFormStatus(
+      "Message saved in Firebase, but email notification failed. Check EmailJS settings.",
+      "error"
+    );
+  } else if (emailSent) {
+    contactForm.reset();
+    showFormStatus(
+      "Email sent, but Firebase could not save the message.",
+      "error"
+    );
+  } else {
+    showFormStatus(
+      "Message could not be submitted. Please check your connection and configuration.",
+      "error"
+    );
+  }
+
+  submitButton.disabled = false;
+  submitButton.innerHTML =
+    'Send message <span aria-hidden="true">↗</span>';
 });
 
 // Avoid accidental browser horizontal scrolling due to pointer interaction; no custom cursor needed.
