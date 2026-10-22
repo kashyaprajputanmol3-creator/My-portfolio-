@@ -246,9 +246,9 @@ const formStatus = document.querySelector("#formStatus");
 const submitButton = document.querySelector("#submitButton");
 
 const firebaseConfigured =
-  FIREBASE_CONFIG.apiKey !== "PASTE_YOUR_FIREBASE_API_KEY" &&
-  FIREBASE_CONFIG.projectId !== "PASTE_YOUR_PROJECT_ID" &&
-  FIREBASE_CONFIG.appId !== "PASTE_YOUR_APP_ID";
+  FIREBASE_CONFIG.apiKey !== "AIzaSyAYOa4g5MS73-0xIvo7icqAVymnknmrNjA" &&
+  FIREBASE_CONFIG.projectId !== "my-portfolio-52d49" &&
+  FIREBASE_CONFIG.appId !== "1:920419113191:web:935c0bef30eb3b7ec3aa42";
 
 function showFormStatus(message, type = "") {
   formStatus.textContent = message;
