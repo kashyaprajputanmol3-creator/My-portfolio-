@@ -7,6 +7,13 @@
   4) Replace social links in PORTFOLIO_CONFIG.
   Never put service-account credentials or private API secrets in this file.
 */
+
+const EMAILJS_CONFIG = {
+  publicKey: "i6WhwPGkIQOY2EbRZ",
+  serviceId: "service_awxoenx",
+  templateId: "template_rtzqr6r"
+};
+
 const PORTFOLIO_CONFIG = {
   name: "Anmol Kashyap",
   social: {
