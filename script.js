@@ -19,7 +19,7 @@ const PORTFOLIO_CONFIG = {
 // Replace placeholder strings with your Firebase project's web-app configuration.
 // Firebase web config is not a server secret; Firestore Security Rules are the security boundary.
 
-const FIREBASE_CONFIG = {
+ const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAYOa4g5MS73-0xIvo7icqAVymnknmrNjA",
   authDomain: "my-portfolio-52d49.firebaseapp.com",
   projectId: "my-portfolio-52d49",
