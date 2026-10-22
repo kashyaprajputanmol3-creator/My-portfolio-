@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public portfolio visitors may submit valid messages, but cannot read, edit,
+    // or delete messages. Keep private messages accessible only to the project owner
+    // through a trusted admin environment (never add client-side list/read access).
+    match /portfolioMessages/{messageId} {
+      allow create: if
+        request.resource.data.keys().hasAll(['name', 'email', 'message', 'createdAt', 'source']) &&
+        request.resource.data.keys().hasOnly(['name', 'email', 'message', 'createdAt', 'source']) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() >= 2 &&
+        request.resource.data.name.size() <= 80 &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() >= 5 &&
+        request.resource.data.email.size() <= 254 &&
+        request.resource.data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$') &&
+        request.resource.data.message is string &&
+        request.resource.data.message.size() >= 10 &&
+        request.resource.data.message.size() <= 2000 &&
+        request.resource.data.source == 'portfolio' &&
+        request.resource.data.createdAt == request.time;
+      allow read, update, delete: if false;
+    }
+
+    // Deny access to all other collections unless a separate rule is intentionally added.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
